@@ -3,14 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { JobForm } from "@/components/JobForm";
+import api from "@/lib/api";
 
-const fetchJobs = async () => {
-  const res = await fetch("/api/jobs");
-  return res.json();
+interface Job {
+  id: number;
+  name: string;
+  description: string;
+  cron: string;
+  status: boolean;
+}
+
+const fetchJobs = async (): Promise<Job[]> => {
+  const response = await api.get("/jobs");
+  return response.data as Job[];
 };
 
 export function JobList() {
-  const { data: jobs, isLoading, isError } = useQuery({ queryKey: ["jobs"], queryFn: fetchJobs });
+  const { data: jobs, isLoading, isError } = useQuery<Job[]>({ queryKey: ["jobs"], queryFn: fetchJobs });
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error fetching jobs</div>;
@@ -27,7 +36,7 @@ export function JobList() {
             <DialogHeader>
               <DialogTitle>Add Job</DialogTitle>
             </DialogHeader>
-            <JobForm />
+            <JobForm job={null} onSubmit={() => {}} />
           </DialogContent>
         </Dialog>
       </div>
@@ -42,7 +51,7 @@ export function JobList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {jobs.map((job) => (
+          {jobs?.map((job: Job) => (
             <TableRow key={job.id}>
               <TableCell>{job.name}</TableCell>
               <TableCell>{job.description}</TableCell>

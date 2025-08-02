@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import crud, models, schemas, scheduler
@@ -7,7 +6,7 @@ from typing import List
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(root_path="/api")
 
 # Dependency
 def get_db():
@@ -38,6 +37,7 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
 
 @app.get("/jobs/", response_model=List[schemas.Job])
 def read_jobs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    print("Reading jobs...")
     jobs = crud.get_jobs(db, skip=skip, limit=limit)
     return jobs
 

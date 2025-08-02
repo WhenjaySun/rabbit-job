@@ -8,6 +8,7 @@ def get_job(db: Session, job_id: int):
 def get_jobs(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Job).offset(skip).limit(limit).all()
 
+
 def create_job(db: Session, job: schemas.JobCreate):
     db_job = models.Job(**job.dict())
     db.add(db_job)
