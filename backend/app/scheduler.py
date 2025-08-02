@@ -1,4 +1,5 @@
 
+import json
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy.orm import Session
 from . import crud, schemas
@@ -31,8 +32,12 @@ def run_script(db: Session, job_id: int, script_type: str, script_content: str, 
     crud.create_job_log(db, log)
 
 def schedule_job(db: Session, job):
-    if job.status:
-        scheduler.add_job(run_script, "cron", id=str(job.id), args=[db, job.id, job.script_type, job.script_content, job.timeout], **job.cron)
+    if job.status and job.cron:
+        try:
+            cron_data = json.loads(job.cron)
+            scheduler.add_job(run_script, "cron", id=str(job.id), args=[db, job.id, job.script_type, job.script_content, job.timeout], **cron_data)
+        except json.JSONDecodeError:
+            print(f"Skipping job {job.id} due to invalid cron string.")
 
 def reschedule_job(db: Session, job):
     scheduler.remove_job(str(job.id))
